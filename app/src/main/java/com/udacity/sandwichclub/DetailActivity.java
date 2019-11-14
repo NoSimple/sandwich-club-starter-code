@@ -3,6 +3,7 @@ package com.udacity.sandwichclub;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.squareup.picasso.Picasso;
 import com.udacity.sandwichclub.model.Sandwich;
 import com.udacity.sandwichclub.utils.JsonUtils;
+
+import org.json.JSONException;
 
 public class DetailActivity extends AppCompatActivity {
 
@@ -22,6 +25,10 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
 
         ImageView ingredientsIv = findViewById(R.id.image_iv);
+        TextView alsoKnownTv = findViewById(R.id.also_known_tv);
+        TextView placeOfOriginTv = findViewById(R.id.place_of_origin_tv);
+        TextView descriptionTv = findViewById(R.id.description_tv);
+        TextView ingredientsTv = findViewById(R.id.ingredients_tv);
 
         Intent intent = getIntent();
         if (intent == null) {
@@ -37,7 +44,13 @@ public class DetailActivity extends AppCompatActivity {
 
         String[] sandwiches = getResources().getStringArray(R.array.sandwich_details);
         String json = sandwiches[position];
-        Sandwich sandwich = JsonUtils.parseSandwichJson(json);
+        Sandwich sandwich = null;
+        try {
+            sandwich = JsonUtils.parseSandwichJson(json);
+        } catch (JSONException error) {
+            Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
         if (sandwich == null) {
             // Sandwich data unavailable
             closeOnError();
@@ -50,6 +63,17 @@ public class DetailActivity extends AppCompatActivity {
                 .into(ingredientsIv);
 
         setTitle(sandwich.getMainName());
+
+        for (String alsoKnownAs : sandwich.getAlsoKnownAs()) {
+            alsoKnownTv.append(alsoKnownAs + ", ");
+        }
+
+        placeOfOriginTv.setText(sandwich.getPlaceOfOrigin());
+        descriptionTv.setText(sandwich.getDescription());
+
+        for (String ingredients : sandwich.getIngredients()) {
+            ingredientsTv.append(ingredients + ", ");
+        }
     }
 
     private void closeOnError() {
